@@ -1,7 +1,7 @@
 use rand::{Rng, rng};
 
 #[derive(Debug, Clone, Copy)]
-enum EntropySize {
+pub enum EntropySize {
     Bits128,
     Bits160,
     Bits192,
@@ -38,6 +38,15 @@ mod test {
     use crate::entropy::{Entropy, EntropySize};
 
     #[test]
+    fn entropy_size_bytes_are_correct() {
+        assert_eq!(EntropySize::Bits128.bytes(), 128 / 8);
+        assert_eq!(EntropySize::Bits160.bytes(), 160 / 8);
+        assert_eq!(EntropySize::Bits192.bytes(), 192 / 8);
+        assert_eq!(EntropySize::Bits224.bytes(), 224 / 8);
+        assert_eq!(EntropySize::Bits256.bytes(), 256 / 8);
+    }
+
+    #[test]
     fn entropy_outputs_desired_size() {
         let allowed_sizes = vec![
             EntropySize::Bits128,
@@ -48,8 +57,25 @@ mod test {
         ];
 
         for size in allowed_sizes {
-            let generated_entropy = Entropy::generate(size);
-            assert_eq!(generated_entropy.len(), size.bytes());
+            let entropy = Entropy::generate(size);
+            assert_eq!(
+                entropy.len(),
+                size.bytes(),
+                "generated entropy length for {:?} should be {} bytes",
+                size,
+                size.bytes()
+            );
         }
+    }
+
+    #[test]
+    fn entropy_generation_is_not_constant() {
+        let first = Entropy::generate(EntropySize::Bits128);
+        let second = Entropy::generate(EntropySize::Bits128);
+
+        assert_ne!(
+            first, second,
+            "two generated entropy values should not be identical"
+        );
     }
 }
