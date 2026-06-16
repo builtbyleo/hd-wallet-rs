@@ -66,19 +66,23 @@ impl Mnemonic {
     pub fn new(num_words: MnemonicLength) -> Self {
         let entropy_size: EntropySize = num_words.into();
         let entropy = Entropy::generate(entropy_size);
-        Self::generate_words(entropy)
+        Self::generate_words(&entropy)
     }
 
     /// # Errors
     ///
     /// Returns `InvalidEntropyLength` if entropy not a valid length
+    #[expect(
+        clippy::needless_pass_by_value,
+        reason = "Intentionally consumes Entropy so it cannot be reused after phrase generation"
+    )]
     pub fn from_entropy(entropy: Entropy) -> Result<Self, Error> {
         MnemonicLength::from_entropy(&entropy)?;
 
-        Ok(Self::generate_words(entropy))
+        Ok(Self::generate_words(&entropy))
     }
 
-    fn generate_words(entropy: Entropy) -> Self {
+    fn generate_words(entropy: &Entropy) -> Self {
         let words_list = WordList::new();
 
         let words = entropy
