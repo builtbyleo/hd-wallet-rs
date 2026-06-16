@@ -1,5 +1,5 @@
 use crate::{
-    entropy::{self, Entropy, EntropySize},
+    entropy::{Entropy, EntropySize},
     words::WordList,
 };
 
@@ -106,12 +106,12 @@ mod test {
 
     #[test]
     fn known_words_from_known_entropy() {
-        let know_mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+        let known_mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
         let known_bytes = [0u8; 16];
         let entropy = Entropy::from_bytes(&known_bytes);
 
         let mnemonic = Mnemonic::from_entropy(entropy).unwrap();
 
-        assert_eq!(mnemonic.phrase(), know_mnemonic);
+        assert_eq!(mnemonic.phrase(), known_mnemonic);
     }
 }
