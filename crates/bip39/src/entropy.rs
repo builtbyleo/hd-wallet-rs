@@ -27,9 +27,9 @@ impl EntropySize {
         self.bits() / 8
     }
 
-    pub const fn checksum_bits(self) -> usize {
-        self.bits() / 32
-    }
+    // pub const fn checksum_bits(self) -> usize {
+    //     self.bits() / 32
+    // }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -52,16 +52,25 @@ impl Entropy {
         }
     }
 
-    pub fn checksum_bits(&self, size: EntropySize) -> ChecksumBits {
-        let hash = Sha256::digest(&self.bytes);
+    pub fn word_indices(&self) -> Bits11Iter<impl Iterator<Item = u8> + '_> {
+        Bits11Iter {
+            bits: self.bits_iter().chain(self.checksum_bits()),
+        }
+    }
 
+    pub fn checksum_bits(&self) -> ChecksumBits {
+        let hash = Sha256::digest(&self.bytes);
         let first_byte = hash[0];
 
         ChecksumBits {
             byte: first_byte,
             pos: 0,
-            len: size.checksum_bits(),
+            len: self.checksum_len(),
         }
+    }
+
+    fn checksum_len(&self) -> usize {
+        self.bytes.len() * 8 / 32
     }
 }
 
