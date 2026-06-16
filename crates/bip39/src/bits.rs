@@ -34,8 +34,8 @@ pub struct Bits11Iter<I> {
 pub struct Bits11(u16);
 
 impl Bits11 {
-    pub fn bits(self) -> u16 {
-        self.0
+    pub fn index(self) -> usize {
+        self.0 as usize
     }
 }
 

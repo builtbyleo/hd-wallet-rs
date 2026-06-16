@@ -44,13 +44,8 @@ impl Mnemonic {
         let entropy = Entropy::generate(entropy_size);
         let words_list = WordList::new();
 
-        let full = entropy
-            .bits_iter()
-            .chain(entropy.checksum_bits(entropy_size));
-
-        let eleven_bit_iter = Bits11Iter { bits: full };
-
-        let words: String = eleven_bit_iter
+        let words = entropy
+            .word_indices()
             .map(|bits| words_list.get_word(bits))
             .collect::<Vec<_>>()
             .join(" ");

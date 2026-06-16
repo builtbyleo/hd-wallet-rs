@@ -11,6 +11,6 @@ impl WordList {
         }
     }
     pub fn get_word(&self, bits: Bits11) -> &'static str {
-        self.inner[usize::from(bits.bits())]
+        self.inner[bits.index()]
     }
 }
