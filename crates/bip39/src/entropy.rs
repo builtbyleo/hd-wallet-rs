@@ -26,10 +26,6 @@ impl EntropySize {
     pub const fn bytes(self) -> usize {
         self.bits() / 8
     }
-
-    // pub const fn checksum_bits(self) -> usize {
-    //     self.bits() / 32
-    // }
 }
 
 #[derive(Debug, PartialEq, Eq)]
