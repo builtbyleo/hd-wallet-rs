@@ -1,4 +1,8 @@
-use crate::entropy::{Entropy, EntropySize};
+use crate::{
+    bits::Bits11Iter,
+    entropy::{Entropy, EntropySize},
+    words::WordList,
+};
 
 #[derive(Debug, Copy, Clone)]
 pub enum MnemonicLength {
@@ -30,18 +34,29 @@ impl From<MnemonicLength> for EntropySize {
 
 impl From<MnemonicLength> for Mnemonic {
     fn from(num_words: MnemonicLength) -> Self {
-        let entropy_size: EntropySize = num_words.into();
-        let mut entropy = Entropy::generate(entropy_size);
-
-        let wordlist: Vec<&'static str> = include_str!("words.txt").split_whitespace().collect();
-
-        // TODO: split into 11 bits and map to word list
-
-        todo!()
+        Mnemonic::new(num_words)
     }
 }
 
 impl Mnemonic {
+    pub fn new(num_words: MnemonicLength) -> Self {
+        let entropy_size: EntropySize = num_words.into();
+        let entropy = Entropy::generate(entropy_size);
+        let words_list = WordList::new();
+
+        let full = entropy
+            .bits_iter()
+            .chain(entropy.checksum_bits(entropy_size));
+
+        let eleven_bit_iter = Bits11Iter { bits: full };
+
+        let words: String = eleven_bit_iter
+            .map(|bits| words_list.get_word(bits))
+            .collect::<Vec<_>>()
+            .join(" ");
+
+        Self { words }
+    }
     pub fn phrase(&self) -> &str {
         &self.words
     }

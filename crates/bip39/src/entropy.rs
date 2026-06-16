@@ -1,6 +1,8 @@
 use rand::{Rng, rng};
 use sha2::{Digest, Sha256};
 
+use crate::bits::{Bits11Iter, BitsIter, ChecksumBits};
+
 #[derive(Debug, Clone, Copy)]
 pub enum EntropySize {
     Bits128,
@@ -43,93 +45,23 @@ impl Entropy {
         Self { bytes }
     }
 
-    pub fn bits11_iter(&self) -> Bits11Iter<'_> {
-        Bits11Iter {
-            bits: self.bits_iter(),
-        }
-    }
-
-    fn bits_iter(&self) -> BitsIter<'_> {
+    pub fn bits_iter(&self) -> BitsIter<'_> {
         BitsIter {
             bytes: &self.bytes,
             pos: 0,
         }
     }
 
-    pub fn checksum(&self, size: EntropySize) -> u8 {
-        // let checksum = size.checksum_bits();
-        todo!()
-    }
+    pub fn checksum_bits(&self, size: EntropySize) -> ChecksumBits {
+        let hash = Sha256::digest(&self.bytes);
 
-    fn hash(&self) -> Vec<u8> {
-        Sha256::digest(&self.bytes).to_vec()
-    }
-}
+        let first_byte = hash[0];
 
-pub struct BitsIter<'a> {
-    bytes: &'a [u8],
-    pos: usize,
-}
-
-pub struct Bits11Iter<'a> {
-    bits: BitsIter<'a>,
-}
-
-// stream 1 bit at a time
-impl Iterator for BitsIter<'_> {
-    type Item = u8;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let bytes = self.bytes;
-        let pos = self.pos;
-        if pos >= bytes.len() * 8 {
-            return None;
+        ChecksumBits {
+            byte: first_byte,
+            pos: 0,
+            len: size.checksum_bits(),
         }
-
-        let byte_index = pos / 8;
-        let bit_index = pos % 8;
-        // i  7 6 5 4 3 2 1 0
-        // b' 1 0 1 0 0 0 1 0
-        // need MSB first
-        let shift = 7 - bit_index;
-
-        let byte = bytes[byte_index];
-
-        // b' 1 0 1 0 0 0 1 0 >> shift
-        // b' 0 0 0 0 0 0 0 1 Moves MSB to the right
-        //
-        // b' 0 0 0 0 0 0 0 1
-        // b' 0 0 0 0 0 0 0 1 & (1 mask)
-        // -------------------
-        // b' 0 0 0 0 0 0 0 1
-        // Gives us bit at the right most pos
-        let bit = (byte >> shift) & 1;
-
-        self.pos += 1;
-
-        return Some(bit);
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Bits11(u16);
-
-// stream 11 bits at a time
-impl<'a> Iterator for Bits11Iter<'a> {
-    type Item = Bits11;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let mut buffer = 0;
-
-        for _ in 0..11 {
-            let bit = self.bits.next()?;
-
-            buffer <<= 1;
-
-            buffer |= bit as u16;
-        }
-
-        Some(Bits11(buffer))
     }
 }
 
