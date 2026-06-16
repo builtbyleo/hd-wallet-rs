@@ -1,5 +1,5 @@
 use crate::{
-    entropy::{Entropy, EntropySize},
+    entropy::{self, Entropy, EntropySize},
     words::WordList,
 };
 
@@ -10,6 +10,11 @@ pub enum MnemonicLength {
     W18,
     W21,
     W24,
+}
+
+#[derive(Debug)]
+pub enum Error {
+    InvalidEntropyLength(usize),
 }
 
 pub struct Mnemonic {
@@ -37,11 +42,43 @@ impl From<MnemonicLength> for Mnemonic {
     }
 }
 
+impl MnemonicLength {
+    /// # Errors
+    ///
+    /// Returns `InvalidEntropyLength` if entropy not a valid length
+    pub fn from_entropy(entropy: &Entropy) -> Result<MnemonicLength, Error> {
+        let size = entropy.size() * 8;
+        let mnemonic_type = match size {
+            128 => MnemonicLength::W12,
+            160 => MnemonicLength::W15,
+            192 => MnemonicLength::W18,
+            224 => MnemonicLength::W21,
+            256 => MnemonicLength::W24,
+            _ => Err(Error::InvalidEntropyLength(size))?,
+        };
+
+        Ok(mnemonic_type)
+    }
+}
+
 impl Mnemonic {
     #[must_use]
     pub fn new(num_words: MnemonicLength) -> Self {
         let entropy_size: EntropySize = num_words.into();
         let entropy = Entropy::generate(entropy_size);
+        Self::generate_words(entropy)
+    }
+
+    /// # Errors
+    ///
+    /// Returns `InvalidEntropyLength` if entropy not a valid length
+    pub fn from_entropy(entropy: Entropy) -> Result<Self, Error> {
+        MnemonicLength::from_entropy(&entropy)?;
+
+        Ok(Self::generate_words(entropy))
+    }
+
+    fn generate_words(entropy: Entropy) -> Self {
         let words_list = WordList::new();
 
         let words = entropy
@@ -56,5 +93,21 @@ impl Mnemonic {
     #[must_use]
     pub fn phrase(&self) -> &str {
         &self.words
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{Mnemonic, entropy::Entropy};
+
+    #[test]
+    fn known_words_from_known_entropy() {
+        let know_mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+        let known_bytes = [0u8; 16];
+        let entropy = Entropy::from_bytes(&known_bytes);
+
+        let mnemonic = Mnemonic::from_entropy(entropy).unwrap();
+
+        assert_eq!(mnemonic.phrase(), know_mnemonic);
     }
 }

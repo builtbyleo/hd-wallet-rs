@@ -41,6 +41,16 @@ impl Entropy {
         Self { bytes }
     }
 
+    pub fn from_bytes(bytes: &[u8]) -> Self {
+        Self {
+            bytes: bytes.to_vec(),
+        }
+    }
+
+    pub fn size(&self) -> usize {
+        self.bytes.len()
+    }
+
     pub fn bits_iter(&self) -> BitsIter<'_> {
         BitsIter {
             bytes: &self.bytes,
