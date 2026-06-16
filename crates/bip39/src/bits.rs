@@ -12,31 +12,22 @@ impl Iterator for ChecksumBits {
             return None;
         }
 
-        let shift = 7 - self.pos;
-        let bit = (self.byte >> shift) & 1;
+        let bit = bit_at_msb(self.byte, self.pos);
 
         self.pos += 1;
 
         Some(bit)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.len.saturating_sub(self.pos);
+        (remaining, Some(remaining))
     }
 }
 
 pub struct BitsIter<'a> {
     pub bytes: &'a [u8],
     pub pos: usize,
-}
-
-pub struct Bits11Iter<I> {
-    pub bits: I,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Bits11(u16);
-
-impl Bits11 {
-    pub fn index(self) -> usize {
-        self.0 as usize
-    }
 }
 
 // stream 1 bit at a time
@@ -51,27 +42,32 @@ impl Iterator for BitsIter<'_> {
         }
 
         let byte_index = pos / 8;
-        let bit_index = pos % 8;
-        // i  7 6 5 4 3 2 1 0
-        // b' 1 0 1 0 0 0 1 0
-        // need MSB first
-        let shift = 7 - bit_index;
-
         let byte = bytes[byte_index];
 
-        // b' 1 0 1 0 0 0 1 0 >> shift
-        // b' 0 0 0 0 0 0 0 1 Moves MSB to the right
-        //
-        // b' 0 0 0 0 0 0 0 1
-        // b' 0 0 0 0 0 0 0 1 & (1 mask)
-        // -------------------
-        // b' 0 0 0 0 0 0 0 1
-        // Gives us bit at the right most pos
-        let bit = (byte >> shift) & 1;
+        let bit = bit_at_msb(byte, self.pos % 8);
 
         self.pos += 1;
 
         Some(bit)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let total_bits = self.bytes.len() * 8;
+        let remaining = total_bits.saturating_sub(self.pos);
+        (remaining, Some(remaining))
+    }
+}
+
+pub struct Bits11Iter<I> {
+    pub bits: I,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Bits11(u16);
+
+impl Bits11 {
+    pub fn index(self) -> usize {
+        self.0 as usize
     }
 }
 
@@ -95,4 +91,27 @@ where
 
         Some(Bits11(buffer))
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let (lower, upper) = self.bits.size_hint();
+        (lower / 11, upper.map(|upper| upper / 11))
+    }
+}
+
+// i  7 6 5 4 3 2 1 0
+// b' 1 0 1 0 0 0 1 0
+// need MSB first
+// let shift = 7 - index;
+// b' 1 0 1 0 0 0 1 0 >> shift
+// b' 0 0 0 0 0 0 0 1 Moves MSB to the right
+//
+// b' 0 0 0 0 0 0 0 1
+// b' 0 0 0 0 0 0 0 1 & (1 mask)
+// -------------------
+// b' 0 0 0 0 0 0 0 1
+// Gives us bit at the right most pos
+// bit = (byte >> shift) & 1;
+fn bit_at_msb(byte: u8, pos: usize) -> u8 {
+    let shift = 7 - pos;
+    (byte >> shift) & 1
 }
