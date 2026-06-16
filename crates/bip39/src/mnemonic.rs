@@ -1,5 +1,4 @@
 use crate::{
-    bits::Bits11Iter,
     entropy::{Entropy, EntropySize},
     words::WordList,
 };
@@ -39,6 +38,7 @@ impl From<MnemonicLength> for Mnemonic {
 }
 
 impl Mnemonic {
+    #[must_use]
     pub fn new(num_words: MnemonicLength) -> Self {
         let entropy_size: EntropySize = num_words.into();
         let entropy = Entropy::generate(entropy_size);
@@ -52,6 +52,8 @@ impl Mnemonic {
 
         Self { words }
     }
+
+    #[must_use]
     pub fn phrase(&self) -> &str {
         &self.words
     }
