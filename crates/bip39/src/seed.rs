@@ -32,6 +32,11 @@ impl Seed {
     pub fn as_bytes(&self) -> &[u8] {
         &self.bytes
     }
+
+    #[must_use]
+    pub fn from_bytes(bytes: [u8; 64]) -> Self {
+        Self { bytes }
+    }
 }
 
 impl fmt::LowerHex for Seed {
