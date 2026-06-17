@@ -13,7 +13,7 @@ name = "bip32"
 version = "0.1.0"
 dependencies = [
  "bip39",
- "pbkdf2",
+ "hmac",
  "sha2",
 ]
 
