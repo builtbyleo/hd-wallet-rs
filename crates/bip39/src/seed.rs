@@ -12,6 +12,7 @@ pub struct Seed {
 const ROUNDS: u32 = 2048;
 
 impl Seed {
+    #[must_use]
     pub fn new(mnemonic: &Mnemonic, passphrase: Option<&str>) -> Self {
         let salt = format!("mnemonic{}", passphrase.unwrap_or(""));
 

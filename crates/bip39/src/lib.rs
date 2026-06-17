@@ -5,3 +5,4 @@ mod seed;
 mod words;
 
 pub use mnemonic::{Mnemonic, MnemonicLength};
+pub use seed::Seed;
