@@ -6,7 +6,7 @@ use crate::mnemonic::Mnemonic;
 
 #[derive(Clone)]
 pub struct Seed {
-    bytes: Vec<u8>,
+    bytes: [u8; 64],
 }
 
 const ROUNDS: u32 = 2048;
@@ -25,9 +25,12 @@ impl Seed {
             &mut buff,
         );
 
-        Self {
-            bytes: buff.to_vec(),
-        }
+        Self { bytes: buff }
+    }
+
+    #[must_use]
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.bytes
     }
 }
 
