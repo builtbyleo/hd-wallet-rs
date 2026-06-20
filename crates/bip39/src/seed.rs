@@ -1,6 +1,6 @@
 use pbkdf2::pbkdf2_hmac;
 use sha2::Sha512;
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 use crate::mnemonic::Mnemonic;
 
@@ -36,6 +36,17 @@ impl Seed {
     #[must_use]
     pub fn from_bytes(bytes: [u8; 64]) -> Self {
         Self { bytes }
+    }
+
+    /// # Errors
+    ///
+    /// Returns `hex::FromHexError` if str is invalid hex
+    pub fn from_hex(hex: &str) -> Result<Self, hex::FromHexError> {
+        let bytes: [u8; 64] = hex::decode(hex)?
+            .try_into()
+            .map_err(|_| hex::FromHexError::InvalidStringLength)?;
+
+        Ok(Self { bytes })
     }
 }
 

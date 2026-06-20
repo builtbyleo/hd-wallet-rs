@@ -10,3 +10,4 @@ workspace = true
 rand.workspace = true
 sha2.workspace = true
 pbkdf2 = "0.13.0"
+hex.workspace = true
