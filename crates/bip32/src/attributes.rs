@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct ExtendedKeyAttrs {
     pub depth: u8,
     pub parent_fingerprint: [u8; 4],

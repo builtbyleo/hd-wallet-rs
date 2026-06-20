@@ -29,7 +29,7 @@ impl Seed {
     }
 
     #[must_use]
-    pub fn as_bytes(&self) -> &[u8] {
+    pub fn as_bytes(&self) -> &[u8; 64] {
         &self.bytes
     }
 
