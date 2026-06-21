@@ -17,4 +17,4 @@ Acknowledgements
 * Based on the [learn bitcoin wallet guide](https://learnmeabitcoin.com/technical/keys/hd-wallets/)
 * Inspired by [bip39-rs](https://github.com/infincia/bip39-rs/tree/master) and [bip32](https://github.com/iqlusioninc/crates/tree/main/bip32)
 
-> **Aside:** No AI generated code was used in this project, as it is primalriy a learning exercise
+> No AI generated code was used in this project, as it is primarily a learning exercise
