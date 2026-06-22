@@ -20,6 +20,8 @@ const BIP32_DOMAIN_SEPARATOR: &[u8; 12] = b"Bitcoin seed";
 pub enum Error {
     /// Opaque crypto errors
     Crypto,
+    /// Max Depth reached
+    MaxDepth,
 }
 
 impl From<k256::ecdsa::Error> for Error {
@@ -28,10 +30,16 @@ impl From<k256::ecdsa::Error> for Error {
     }
 }
 
+impl From<sha2::digest::InvalidLength> for Error {
+    fn from(_: sha2::digest::InvalidLength) -> Error {
+        Error::Crypto
+    }
+}
+
 impl ExtPrivKey {
     #[must_use]
     fn new(seed: Seed) -> Result<Self, Error> {
-        let mut mac = HmacSha512::new_from_slice(BIP32_DOMAIN_SEPARATOR).unwrap();
+        let mut mac = HmacSha512::new_from_slice(BIP32_DOMAIN_SEPARATOR)?;
 
         mac.update(seed.as_bytes());
 
@@ -67,6 +75,47 @@ impl ExtPrivKey {
 
     pub fn attributes(&self) -> &ExtendedKeyAttrs {
         &self.attributes
+    }
+
+    pub fn derive_child(&self) -> Result<Self, Error> {
+        self.derive()
+    }
+
+    pub fn to_bytes(&self) -> [u8; 32] {
+        self.private_key.to_bytes().into()
+    }
+
+    fn derive(&self) -> Result<Self, Error> {
+        let parent_pub = self.public_key();
+        let index = 0;
+        let mut mac = HmacSha512::new_from_slice(&parent_pub.to_bytes())?;
+
+        mac.update(&self.to_bytes());
+
+        let result = mac.finalize().into_bytes();
+
+        let mut private_key = [0u8; 32];
+        let mut chain_code = [0u8; 32];
+
+        private_key.copy_from_slice(&result[..32]);
+        chain_code.copy_from_slice(&result[32..]);
+        let private_key = SigningKey::from_slice(&private_key)?;
+
+        let attributes = ExtendedKeyAttrs {
+            depth: self
+                .attributes
+                .depth
+                .checked_add(1)
+                .ok_or(Error::MaxDepth)?,
+            parent_fingerprint: [0; 4],
+            child_number: 0,
+            chain_code,
+        };
+
+        Ok(Self {
+            private_key,
+            attributes,
+        })
     }
 }
 
