@@ -1,9 +1,9 @@
 use bip39::Seed;
 use hmac::{Hmac, KeyInit, Mac};
-use k256::ecdsa::{SigningKey, VerifyingKey};
+use k256::ecdsa::SigningKey;
 use sha2::Sha512;
 
-use crate::attributes::ExtendedKeyAttrs;
+use crate::extended_keys::{ExtPubKey, ExtendedKeyAttrs};
 
 pub struct ExtPrivKey {
     private_key: SigningKey,
@@ -56,23 +56,17 @@ impl ExtPrivKey {
             attributes,
         })
     }
+
     pub fn public_key(&self) -> ExtPubKey {
         self.into()
     }
-}
 
-pub struct ExtPubKey {
-    pub_key: VerifyingKey,
-    attributes: ExtendedKeyAttrs,
-}
+    pub fn private_key(&self) -> &SigningKey {
+        &self.private_key
+    }
 
-impl From<&ExtPrivKey> for ExtPubKey {
-    fn from(xpriv: &ExtPrivKey) -> Self {
-        let pub_key = VerifyingKey::from(&xpriv.private_key);
-        Self {
-            pub_key,
-            attributes: xpriv.attributes.clone(),
-        }
+    pub fn attributes(&self) -> &ExtendedKeyAttrs {
+        &self.attributes
     }
 }
 
@@ -80,7 +74,7 @@ impl From<&ExtPrivKey> for ExtPubKey {
 mod test {
     use bip39::Seed;
 
-    use crate::master_key::ExtPrivKey;
+    use crate::extended_keys::private_key::ExtPrivKey;
 
     #[test]
     fn known_ext_priv_key_from_known_seed() {
