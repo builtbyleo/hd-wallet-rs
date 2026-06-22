@@ -16,3 +16,13 @@ impl From<&ExtPrivKey> for ExtPubKey {
         }
     }
 }
+
+impl ExtPubKey {
+    pub fn to_bytes(&self) -> [u8; 32] {
+        self.pub_key
+            .to_encoded_point(true)
+            .as_bytes()
+            .try_into()
+            .expect("expected SEC1 key")
+    }
+}
