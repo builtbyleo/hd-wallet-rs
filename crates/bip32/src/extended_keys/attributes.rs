@@ -9,7 +9,7 @@ pub struct ChildNumber(u32);
 impl ChildNumber {
     pub fn normal(n: u32) -> Result<Self, Error> {
         match n {
-            HARDENED_OFFSET.. => Ok(Self(n)),
+            ..HARDENED_OFFSET => Ok(Self(n)),
             _ => Err(Error::InvalidRange),
         }
     }
@@ -22,6 +22,10 @@ impl ChildNumber {
 
     pub fn is_hardened(&self) -> bool {
         self.0 >= HARDENED_OFFSET
+    }
+
+    pub fn to_bytes(&self) -> [u8; 4] {
+        self.0.to_le_bytes()
     }
 }
 
