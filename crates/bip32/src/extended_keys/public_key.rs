@@ -1,6 +1,6 @@
 use k256::ecdsa::VerifyingKey;
 
-use crate::extended_keys::{ExtPrivKey, ExtendedKeyAttrs};
+use crate::extended_keys::{ExtPrivKey, ExtendedKeyAttrs, KEY_SIZE};
 
 pub struct ExtPubKey {
     pub_key: VerifyingKey,
@@ -18,7 +18,7 @@ impl From<&ExtPrivKey> for ExtPubKey {
 }
 
 impl ExtPubKey {
-    pub fn to_bytes(&self) -> [u8; 32] {
+    pub fn to_bytes(&self) -> [u8; KEY_SIZE + 1] {
         self.pub_key
             .to_encoded_point(true)
             .as_bytes()
