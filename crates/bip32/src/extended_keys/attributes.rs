@@ -3,7 +3,7 @@ use crate::extended_keys::errors::Error;
 // Max::u31 = 2^31
 const HARDENED_OFFSET: u32 = 1 << 31;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ChildNumber(u32);
 
 impl ChildNumber {
@@ -25,11 +25,11 @@ impl ChildNumber {
     }
 
     pub fn to_bytes(&self) -> [u8; 4] {
-        self.0.to_le_bytes()
+        self.0.to_be_bytes()
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExtendedKeyAttrs {
     pub depth: u8,
     pub parent_fingerprint: [u8; 4],
