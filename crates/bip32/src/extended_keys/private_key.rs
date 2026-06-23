@@ -64,9 +64,7 @@ impl ExtPrivKey {
 
         self.derive_with(child_number, |mac, this| {
             mac.update(&[0u8]);
-
             mac.update(&this.to_bytes());
-
             Ok(())
         })
     }
@@ -78,7 +76,6 @@ impl ExtPrivKey {
 
         self.derive_with(child_number, |mac, this| {
             mac.update(&this.public_key().to_bytes());
-
             Ok(())
         })
     }
