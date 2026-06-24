@@ -5,8 +5,8 @@ pub enum Error {
     Crypto,
     /// Max Depth reached
     MaxDepth,
-    /// Invalid Range
-    InvalidRange,
+    /// Invalid Child Number Index
+    InvalidIndex,
 }
 
 impl From<k256::ecdsa::Error> for Error {

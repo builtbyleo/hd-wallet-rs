@@ -10,13 +10,13 @@ impl ChildNumber {
     pub fn normal(n: u32) -> Result<Self, Error> {
         match n {
             ..HARDENED_OFFSET => Ok(Self(n)),
-            _ => Err(Error::InvalidRange),
+            _ => Err(Error::InvalidIndex),
         }
     }
     pub fn hardened(n: u32) -> Result<Self, Error> {
         match n {
             HARDENED_OFFSET.. => Ok(Self(n)),
-            _ => Err(Error::InvalidRange),
+            _ => Err(Error::InvalidIndex),
         }
     }
 

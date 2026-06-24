@@ -58,7 +58,7 @@ impl ExtPrivKey {
     /// Default derivation is to derive hardened child
     pub fn derive_child(&self, child_number: ChildNumber) -> Result<Self, Error> {
         if !child_number.is_hardened() {
-            return Err(Error::InvalidRange);
+            return Err(Error::InvalidIndex);
         }
 
         self.derive_with(child_number, |mac, this| {
@@ -70,7 +70,7 @@ impl ExtPrivKey {
 
     pub fn derive_normal_child(&self, child_number: ChildNumber) -> Result<Self, Error> {
         if child_number.is_hardened() {
-            return Err(Error::InvalidRange);
+            return Err(Error::InvalidIndex);
         }
 
         self.derive_with(child_number, |mac, this| {
