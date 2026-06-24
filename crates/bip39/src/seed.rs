@@ -1,6 +1,6 @@
 use pbkdf2::pbkdf2_hmac;
 use sha2::Sha512;
-use std::{fmt, str::FromStr};
+use std::fmt;
 
 use crate::mnemonic::Mnemonic;
 
