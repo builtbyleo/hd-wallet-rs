@@ -20,6 +20,18 @@ impl From<&ExtPrivKey> for ExtPubKey {
 }
 
 impl ExtPubKey {
+    pub fn new(xpriv: &ExtPrivKey) -> Self {
+        xpriv.into()
+    }
+
+    pub fn attributes(&self) -> &ExtendedKeyAttrs {
+        &self.attributes
+    }
+
+    pub fn public_key(&self) -> &VerifyingKey {
+        &self.public_key
+    }
+
     pub fn to_bytes(&self) -> [u8; KEY_SIZE + 1] {
         self.public_key
             .to_encoded_point(true)

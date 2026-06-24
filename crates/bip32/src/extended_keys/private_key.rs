@@ -1,5 +1,5 @@
 use bip39::Seed;
-use hmac::{Hmac, KeyInit, Mac, digest::array::Array};
+use hmac::{Hmac, KeyInit, Mac};
 use k256::{NonZeroScalar, ecdsa::SigningKey};
 use sha2::Sha512;
 
@@ -16,8 +16,7 @@ type HmacSha512 = Hmac<Sha512>;
 const BIP32_DOMAIN_SEPARATOR: &[u8; 12] = b"Bitcoin seed";
 
 impl ExtPrivKey {
-    #[must_use]
-    fn new(seed: Seed) -> Result<Self, Error> {
+    pub fn new(seed: Seed) -> Result<Self, Error> {
         let mut mac = HmacSha512::new_from_slice(BIP32_DOMAIN_SEPARATOR)?;
 
         mac.update(seed.as_bytes());
