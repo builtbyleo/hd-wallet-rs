@@ -83,10 +83,13 @@ where
 
         for _ in 0..11 {
             let bit = self.bits.next()?;
-
-            buffer <<= 1;
-
-            buffer |= u16::from(bit);
+            // Bitshift:
+            //
+            // shift left one: makes space for one bit
+            //
+            // ORs bit with buffer: adds it to
+            // the buffer at that new space
+            buffer = (buffer << 1) | u16::from(bit);
         }
 
         Some(Bits11(buffer))
