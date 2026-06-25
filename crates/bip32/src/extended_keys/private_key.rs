@@ -1,16 +1,15 @@
 use bip39::Seed;
-use hmac::{Hmac, KeyInit, Mac};
+use hmac::{KeyInit, Mac};
 use k256::{NonZeroScalar, ecdsa::SigningKey};
-use sha2::Sha512;
 
-use crate::extended_keys::{ChildNumber, ExtPubKey, ExtendedKeyAttrs, KEY_SIZE, errors::Error};
+use crate::extended_keys::{
+    ChildNumber, ExtPubKey, ExtendedKeyAttrs, HmacSha512, KEY_SIZE, errors::Error,
+};
 
 pub struct ExtPrivKey {
     private_key: SigningKey,
     attributes: ExtendedKeyAttrs,
 }
-
-type HmacSha512 = Hmac<Sha512>;
 
 /// Derivation domain separator for BIP39 keys.
 const BIP32_DOMAIN_SEPARATOR: &[u8; 12] = b"Bitcoin seed";
@@ -83,6 +82,12 @@ impl ExtPrivKey {
     where
         F: FnOnce(&mut HmacSha512, &Self) -> Result<(), Error>,
     {
+        let depth = self
+            .attributes
+            .depth
+            .checked_add(1)
+            .ok_or(Error::MaxDepth)?;
+
         let mut mac = HmacSha512::new_from_slice(&self.attributes.chain_code)?;
 
         update_mac(&mut mac, self)?;
@@ -96,15 +101,10 @@ impl ExtPrivKey {
         let private_key = self.derive_private_key(il)?;
 
         let attributes = ExtendedKeyAttrs {
-            depth: self
-                .attributes
-                .depth
-                .checked_add(1)
-                .ok_or(Error::MaxDepth)?,
-
             parent_fingerprint: self.public_key().fingerprint(),
             child_number,
             chain_code,
+            depth,
         };
 
         Ok(Self {
@@ -182,7 +182,7 @@ mod test {
         assert_eq!(chain_code, expected_chain_code);
 
         let a = master_priv_key
-            .derive_child(ChildNumber::hardened(2147483649).unwrap())
+            .derive_child(ChildNumber::hardened(2147483748).unwrap())
             .unwrap();
 
         let private_key = hex::encode(a.private_key.to_bytes());
