@@ -132,60 +132,71 @@ mod test {
 
     use crate::extended_keys::{ChildNumber, private_key::ExtPrivKey};
 
-    #[test]
-    fn known_ext_priv_key_from_known_seed() {
-        let known_seed = "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4";
+    const SEED_HEX: &str = "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4";
 
-        let seed = Seed::from_hex(known_seed).unwrap();
+    const EXPECTED_MASTER_PRIV_KEY: &str =
+        "1837c1be8e2995ec11cda2b066151be2cfb48adf9e47b151d46adab3a21cdf67";
 
-        let master_priv_key = ExtPrivKey::new(seed).unwrap();
+    const EXPECTED_MASTER_CHAIN_CODE: &str =
+        "7923408dadd3c7b56eed15567707ae5e5dca089de972e07f3b860450e2a3b70e";
 
-        let private_key = hex::encode(master_priv_key.private_key.to_bytes());
-        let chain_code = master_priv_key.attributes.chain_code;
+    fn known_seed() -> Seed {
+        Seed::from_hex(SEED_HEX).unwrap()
+    }
 
-        let expected_priv_key =
-            String::from("1837c1be8e2995ec11cda2b066151be2cfb48adf9e47b151d46adab3a21cdf67");
+    fn known_master_priv_key() -> ExtPrivKey {
+        ExtPrivKey::new(known_seed()).unwrap()
+    }
 
-        assert_eq!(private_key, expected_priv_key);
+    fn assert_ext_priv_key_matches(
+        key: &ExtPrivKey,
+        expected_private_key: &str,
+        expected_chain_code: &str,
+    ) {
+        assert_eq!(
+            hex::encode(key.private_key.to_bytes()),
+            expected_private_key,
+            "private key mismatch",
+        );
 
-        let expected_chain_code: [u8; 32] =
-            hex::decode("7923408dadd3c7b56eed15567707ae5e5dca089de972e07f3b860450e2a3b70e")
-                .unwrap()
-                .try_into()
-                .unwrap();
+        let expected_chain_code: [u8; 32] = hex::decode(expected_chain_code)
+            .unwrap()
+            .try_into()
+            .unwrap();
 
-        assert_eq!(chain_code, expected_chain_code);
+        assert_eq!(
+            key.attributes.chain_code, expected_chain_code,
+            "chain code mismatch",
+        );
     }
 
     #[test]
-    fn known_child() {
-        let known_seed = "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4";
+    fn known_ext_priv_key_from_known_seed() {
+        let master_priv_key = known_master_priv_key();
 
-        let seed = Seed::from_hex(known_seed).unwrap();
+        assert_ext_priv_key_matches(
+            &master_priv_key,
+            EXPECTED_MASTER_PRIV_KEY,
+            EXPECTED_MASTER_CHAIN_CODE,
+        );
+    }
 
-        let master_priv_key = ExtPrivKey::new(seed).unwrap();
+    #[test]
+    fn known_child_from_known_master_key() {
+        let master_priv_key = known_master_priv_key();
 
-        let private_key = hex::encode(master_priv_key.private_key.to_bytes());
-        let chain_code = master_priv_key.attributes.chain_code;
+        assert_ext_priv_key_matches(
+            &master_priv_key,
+            EXPECTED_MASTER_PRIV_KEY,
+            EXPECTED_MASTER_CHAIN_CODE,
+        );
 
-        let expected_priv_key =
-            String::from("1837c1be8e2995ec11cda2b066151be2cfb48adf9e47b151d46adab3a21cdf67");
-
-        assert_eq!(private_key, expected_priv_key);
-
-        let expected_chain_code: [u8; 32] =
-            hex::decode("7923408dadd3c7b56eed15567707ae5e5dca089de972e07f3b860450e2a3b70e")
-                .unwrap()
-                .try_into()
-                .unwrap();
-
-        assert_eq!(chain_code, expected_chain_code);
-
-        let a = master_priv_key
+        let child = master_priv_key
             .derive_child(ChildNumber::hardened(2147483748).unwrap())
             .unwrap();
 
-        let private_key = hex::encode(a.private_key.to_bytes());
-        dbg!(private_key);
+        let child_private_key = hex::encode(child.private_key.to_bytes());
+
+        assert_eq!(child_private_key, "child private key mismatch");
     }
 }
