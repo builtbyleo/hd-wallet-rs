@@ -8,16 +8,19 @@ pub struct ChildNumber(u32);
 
 impl ChildNumber {
     pub fn normal(n: u32) -> Result<Self, Error> {
-        match n {
-            ..HARDENED_OFFSET => Ok(Self(n)),
-            _ => Err(Error::InvalidIndex),
+        if n >= HARDENED_OFFSET {
+            return Err(Error::InvalidIndex);
         }
+
+        Ok(Self(n))
     }
+
     pub fn hardened(n: u32) -> Result<Self, Error> {
-        match n {
-            HARDENED_OFFSET.. => Ok(Self(n)),
-            _ => Err(Error::InvalidIndex),
+        if n >= HARDENED_OFFSET {
+            return Err(Error::InvalidIndex);
         }
+
+        Ok(Self(n + HARDENED_OFFSET))
     }
 
     pub fn is_hardened(&self) -> bool {
