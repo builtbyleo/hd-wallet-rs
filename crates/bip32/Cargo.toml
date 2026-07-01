@@ -10,4 +10,6 @@ hex.workspace = true
 hmac = "0.13.0"
 sha2.workspace = true
 k256.workspace = true
+zeroize.workspace = true
 ripemd = "0.2.0"
+bs58 = { version = "0.5.1", features = ["check"] }

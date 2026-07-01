@@ -1,9 +1,11 @@
 use bip39::Seed;
 use hmac::{KeyInit, Mac};
 use k256::{NonZeroScalar, ecdsa::SigningKey};
+use std::fmt::{self, Display};
 
 use crate::extended_keys::{
-    ChildNumber, ExtPubKey, ExtendedKeyAttrs, HmacSha512, KEY_SIZE, errors::Error,
+    BYTE_SIZE, ChildNumber, ExtPubKey, ExtendedKeyAttrs, HmacSha512, KEY_SIZE, errors::Error,
+    prefix::Prefix,
 };
 
 pub struct ExtPrivKey {
@@ -123,6 +125,25 @@ impl ExtPrivKey {
             .ok_or(Error::Crypto)?;
 
         Ok(SigningKey::from(private_key))
+    }
+
+    fn encode(&self) -> String {
+        let mut bytes = [0u8; BYTE_SIZE];
+        bytes[..4].copy_from_slice(&Prefix::XPrv.to_bytes());
+        bytes[4] = self.attributes.depth;
+        bytes[5..9].copy_from_slice(&self.attributes.parent_fingerprint);
+        bytes[9..13].copy_from_slice(&self.attributes.child_number.to_bytes());
+        bytes[13..45].copy_from_slice(&self.attributes.chain_code);
+        bytes[45] = 0x00;
+        bytes[46..78].copy_from_slice(&self.private_key.to_bytes());
+        let base58 = bs58::encode(&bytes).with_check();
+        base58.into_string()
+    }
+}
+
+impl Display for ExtPrivKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.encode())
     }
 }
 
