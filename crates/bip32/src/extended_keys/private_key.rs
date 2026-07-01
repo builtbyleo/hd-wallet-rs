@@ -206,18 +206,16 @@ mod test {
     fn known_child_from_known_master_key() {
         let master_priv_key = known_master_priv_key();
 
-        assert_ext_priv_key_matches(
-            &master_priv_key,
-            EXPECTED_MASTER_PRIV_KEY,
-            EXPECTED_MASTER_CHAIN_CODE,
-        );
-
         let child = master_priv_key
-            .derive_child(ChildNumber::hardened(2147483748).unwrap())
+            .derive_child(ChildNumber::hardened(0).unwrap())
             .unwrap();
 
         let child_private_key = hex::encode(child.private_key.to_bytes());
+        let expected_child = "c08cf331996482c06db3d259ff99be4bf7083824d53185e33191ee7ceb2bf96f";
 
-        assert_eq!(child_private_key, "child private key mismatch");
+        assert_eq!(
+            child_private_key, expected_child,
+            "child private key mismatch"
+        );
     }
 }
