@@ -1,5 +1,6 @@
 mod attributes;
 mod errors;
+mod prefix;
 mod private_key;
 mod public_key;
 
@@ -11,5 +12,9 @@ use hmac::Hmac;
 use sha2::Sha512;
 
 pub const KEY_SIZE: usize = 32;
+
+pub const BYTE_SIZE: usize = 78;
+
+pub const MAX_BASE58_SIZE: usize = 112;
 
 type HmacSha512 = Hmac<Sha512>;
