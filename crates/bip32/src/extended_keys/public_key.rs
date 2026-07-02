@@ -1,3 +1,5 @@
+use std::fmt::{self, Display};
+
 use hmac::{KeyInit, Mac};
 use k256::ecdsa::VerifyingKey;
 use k256::{
@@ -11,6 +13,8 @@ use k256::{
 use ripemd::Ripemd160;
 use sha2::{Digest, Sha256};
 
+use crate::extended_keys::BYTE_SIZE;
+use crate::extended_keys::prefix::Prefix;
 use crate::{
     ChildNumber,
     extended_keys::{ExtPrivKey, ExtendedKeyAttrs, HmacSha512, KEY_SIZE, errors::Error},
@@ -115,5 +119,23 @@ impl ExtPubKey {
         let child_public_key = child_affine.to_encoded_point(true);
         let verifying_key = VerifyingKey::from_encoded_point(&child_public_key)?;
         Ok(verifying_key)
+    }
+
+    fn encode(&self) -> String {
+        let mut bytes = [0u8; BYTE_SIZE];
+        bytes[..4].copy_from_slice(&Prefix::XPub.to_bytes());
+        bytes[4] = self.attributes.depth;
+        bytes[5..9].copy_from_slice(&self.attributes.parent_fingerprint);
+        bytes[9..13].copy_from_slice(&self.attributes.child_number.to_bytes());
+        bytes[13..45].copy_from_slice(&self.attributes.chain_code);
+        bytes[45..78].copy_from_slice(&self.public_key.to_sec1_bytes());
+        let base58 = bs58::encode(&bytes).with_check();
+        base58.into_string()
+    }
+}
+
+impl Display for ExtPubKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.encode())
     }
 }

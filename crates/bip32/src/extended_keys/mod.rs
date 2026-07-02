@@ -15,6 +15,4 @@ pub const KEY_SIZE: usize = 32;
 
 pub const BYTE_SIZE: usize = 78;
 
-pub const MAX_BASE58_SIZE: usize = 112;
-
 type HmacSha512 = Hmac<Sha512>;
