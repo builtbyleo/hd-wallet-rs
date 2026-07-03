@@ -3,13 +3,16 @@ name = "bip32"
 version = "0.1.0"
 edition = "2024"
 
+[lints]
+workspace = true
 
 [dependencies]
 bip39.workspace = true
 hex.workspace = true
-hmac = "0.13.0"
+derivation_paths.workspace = true
 sha2.workspace = true
 k256.workspace = true
 zeroize.workspace = true
 ripemd = "0.2.0"
+hmac = "0.13.0"
 bs58 = { version = "0.5.1", features = ["check"] }
