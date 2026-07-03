@@ -36,7 +36,7 @@ impl Purpose {
     }
 }
 
-struct BipPath {
+pub struct BipPath {
     purpose: Purpose,
     coin_type: u32,
     account: u32,
