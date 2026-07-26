@@ -31,7 +31,7 @@ impl ExtPrivKey {
             depth: 0,
             parent_fingerprint: [0; 4],
             child_number: ChildNumber::normal(0)?,
-            chain_code: chain_code.try_into().unwrap(),
+            chain_code: chain_code.try_into()?,
         };
 
         Ok(Self {
@@ -40,18 +40,22 @@ impl ExtPrivKey {
         })
     }
 
+    #[must_use]
     pub fn public_key(&self) -> ExtPubKey {
         self.into()
     }
 
+    #[must_use]
     pub fn private_key(&self) -> &SigningKey {
         &self.private_key
     }
 
+    #[must_use]
     pub fn attributes(&self) -> &ExtendedKeyAttrs {
         &self.attributes
     }
 
+    #[must_use]
     pub fn to_bytes(&self) -> [u8; 32] {
         self.private_key.to_bytes().into()
     }

@@ -1,3 +1,5 @@
+use std::array::TryFromSliceError;
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum Error {
@@ -17,6 +19,12 @@ impl From<k256::ecdsa::Error> for Error {
 
 impl From<sha2::digest::InvalidLength> for Error {
     fn from(_: sha2::digest::InvalidLength) -> Error {
+        Error::Crypto
+    }
+}
+
+impl From<TryFromSliceError> for Error {
+    fn from(_: TryFromSliceError) -> Error {
         Error::Crypto
     }
 }
