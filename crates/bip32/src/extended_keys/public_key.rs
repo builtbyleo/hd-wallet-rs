@@ -36,18 +36,25 @@ impl From<&ExtPrivKey> for ExtPubKey {
 }
 
 impl ExtPubKey {
+    #[must_use]
     pub fn new(xpriv: &ExtPrivKey) -> Self {
         xpriv.into()
     }
 
+    #[must_use]
     pub fn attributes(&self) -> &ExtendedKeyAttrs {
         &self.attributes
     }
 
+    #[must_use]
     pub fn public_key(&self) -> &VerifyingKey {
         &self.public_key
     }
 
+    /// # Panics
+    ///
+    /// Panics if the public key does not encode to the expected length.
+    #[must_use]
     pub fn to_bytes(&self) -> [u8; KEY_SIZE + 1] {
         self.public_key
             .to_encoded_point(true)
@@ -56,15 +63,22 @@ impl ExtPubKey {
             .expect("expected SEC1 key")
     }
 
+    /// # Panics
+    ///
+    /// Panics if the public key hash is too short for a fingerprint.
+    #[must_use]
     pub fn fingerprint(&self) -> [u8; 4] {
         let pub_hash = Ripemd160::digest(Sha256::digest(self.to_bytes()));
         pub_hash[..4].try_into().expect("pub hash truncated")
     }
 
+    /// # Errors
+    ///
+    /// Returns an error if the child cannot be derived.
     pub fn derive_child(&self, child_number: ChildNumber) -> Result<Self, Error> {
         if child_number.is_hardened() {
             return Err(Error::InvalidIndex);
-        };
+        }
 
         let depth = self
             .attributes
